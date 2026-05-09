@@ -107,7 +107,7 @@
 </div>
 
 <script>
-    // Mảng dữ liệu 100 mã Key (Đồng bộ với hệ thống file key.txt của Bot)
+    // Mảng lưu trữ dữ liệu 100 mã Key (Đồng bộ với file key.txt của Bot)
     const listKeys = [
         "M4VIP_8901_A3F8", "M4VIP_1254_K9L2", "M4VIP_7731_X5P0", "M4VIP_4492_Q7W4", "M4VIP_6120_M1V8",
         "M4VIP_3059_B6N3", "M4VIP_9541_Z2Y9", "M4VIP_5810_C4X7", "M4VIP_2367_R9T2", "M4VIP_8104_D5F1",
@@ -131,20 +131,20 @@
         "M4VIP_4841_Z2X8", "M4VIP_1597_M5N3", "M4VIP_9375_B9C1", "M4VIP_5044_Y4T2", "M4VIP_2722_R8F9"
     ];
 
-    // Chọn ngẫu nhiên mã key
+    // Lấy ngẫu nhiên Key
     const randomIndex = Math.floor(Math.random() * listKeys.length);
     let selectedKey = listKeys[randomIndex];
-    let timeLeft = 12; // Thiết lập số giây đếm ngược
+    let timeLeft = 12; // Số giây đếm ngược
     let isExpired = false;
 
     const keyBox = document.getElementById('keyDisplay');
     const timerBox = document.getElementById('timerDisplay');
     const copyBtn = document.getElementById('copyBtn');
 
-    // Hiển thị key ban đầu
+    // Hiển thị key lên màn hình
     keyBox.innerText = selectedKey;
 
-    // Bộ đếm ngược thời gian xóa key
+    // Bộ đếm ngược thời gian
     const countdownInterval = setInterval(() => {
         timeLeft--;
         if (timeLeft > 0) {
@@ -152,15 +152,20 @@
         } else {
             clearInterval(countdownInterval);
             isExpired = true;
-            selectedKey = ""; // Xóa dữ liệu chuỗi key biến lưu trữ
-            keyBox.innerText = "❌ KEY ĐÃ HẾT HẠN - VUI LÒNG TẢI LẠI TRANG";
+            selectedKey = ""; // Xóa dữ liệu trong bộ nhớ RAM trình duyệt
+            keyBox.innerText = "❌ HẾT THỜI GIAN - ĐANG CHUYỂN HƯỚNG...";
             keyBox.classList.add('key-expired');
-            timerBox.innerText = "Thời gian hiển thị đã kết thúc!";
-            copyBtn.disabled = true; // Vô hiệu hóa nút bấm sao chép
+            timerBox.innerText = "Đang chuyển hướng an toàn...";
+            copyBtn.disabled = true;
+            
+            // Thực hiện chuyển hướng trang web sang Google sau khi hết giờ
+            setTimeout(() => {
+                window.location.href = "google.com";
+            }, 500); 
         }
     }, 1000);
 
-    // Hàm sao chép mã
+    // Hàm sao chép mã Key
     function copyKey() {
         if (isExpired) return;
         
@@ -175,6 +180,7 @@
         }
     }
 
+    // Cơ chế sao chép dự phòng
     function fallbackCopy(text) {
         const textArea = document.createElement("textarea");
         textArea.value = text;
