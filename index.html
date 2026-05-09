@@ -34,6 +34,12 @@
             border-radius: 8px; 
             word-break: break-all; 
             letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .key-expired {
+            color: #7f8c8d !important;
+            background: #f2f2f2 !important;
+            border-color: #7f8c8d !important;
         }
         button { 
             background: #3498db; 
@@ -48,6 +54,16 @@
             transition: background 0.2s;
         }
         button:hover { background: #2980b9; }
+        button:disabled {
+            background: #bdc3c7 !important;
+            cursor: not-allowed;
+        }
+        .countdown {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 15px;
+            margin-top: 5px;
+        }
         .instruction { 
             margin-top: 25px; 
             font-size: 14px; 
@@ -74,14 +90,16 @@
 
 <div class="card">
     <h2>🎉 VƯỢT LINKM4 THÀNH CÔNG!</h2>
-    <p>Dưới đây là mã Key kích hoạt độc quyền được cấp cho bạn:</p>
+    <p>Dưới đây là mã Key kích hoạt độc quyền của bạn:</p>
     
     <div class="key-box" id="keyDisplay">Đang khởi tạo key...</div>
-    <button onclick="copyKey()">📋 SAO CHÉP MÃ KEY</button>
+    <div class="countdown" id="timerDisplay">Mã Key sẽ biến mất sau: 12 giây</div>
+    <br>
+    <button id="copyBtn" onclick="copyKey()">📋 SAO CHÉP MÃ KEY</button>
     
     <div class="instruction">
         ℹ️ **Hướng dẫn kích hoạt Tool:**<br>
-        1. Nhấn nút **Sao Chép Mã Key** ở phía trên.<br>
+        1. Nhấn nhanh nút **Sao Chép Mã Key** trước khi hết giờ.<br>
         2. Quay lại ứng dụng Chat với Bot Telegram.<br>
         3. Nhập chính xác tin nhắn theo cú pháp sau để mở khóa:<br>
         <center><code>/key MÃ_SỐ_VỪA_COPY</code></center>
@@ -89,7 +107,7 @@
 </div>
 
 <script>
-    // Mảng lưu trữ dữ liệu 100 mã Key đồng bộ với hệ thống Bot Telegram
+    // Mảng dữ liệu 100 mã Key (Đồng bộ với hệ thống file key.txt của Bot)
     const listKeys = [
         "M4VIP_8901_A3F8", "M4VIP_1254_K9L2", "M4VIP_7731_X5P0", "M4VIP_4492_Q7W4", "M4VIP_6120_M1V8",
         "M4VIP_3059_B6N3", "M4VIP_9541_Z2Y9", "M4VIP_5810_C4X7", "M4VIP_2367_R9T2", "M4VIP_8104_D5F1",
@@ -113,15 +131,39 @@
         "M4VIP_4841_Z2X8", "M4VIP_1597_M5N3", "M4VIP_9375_B9C1", "M4VIP_5044_Y4T2", "M4VIP_2722_R8F9"
     ];
 
-    // Hàm chọn ngẫu nhiên một phần tử Key từ mảng danh sách trên
+    // Chọn ngẫu nhiên mã key
     const randomIndex = Math.floor(Math.random() * listKeys.length);
-    const selectedKey = listKeys[randomIndex];
-    
-    // Đẩy Key ra giao diện HTML
-    document.getElementById('keyDisplay').innerText = selectedKey;
+    let selectedKey = listKeys[randomIndex];
+    let timeLeft = 12; // Thiết lập số giây đếm ngược
+    let isExpired = false;
 
-    // Hàm sao chép chuỗi mã Key vào bộ nhớ tạm của thiết bị
+    const keyBox = document.getElementById('keyDisplay');
+    const timerBox = document.getElementById('timerDisplay');
+    const copyBtn = document.getElementById('copyBtn');
+
+    // Hiển thị key ban đầu
+    keyBox.innerText = selectedKey;
+
+    // Bộ đếm ngược thời gian xóa key
+    const countdownInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+            timerBox.innerText = `Mã Key sẽ biến mất sau: ${timeLeft} giây`;
+        } else {
+            clearInterval(countdownInterval);
+            isExpired = true;
+            selectedKey = ""; // Xóa dữ liệu chuỗi key biến lưu trữ
+            keyBox.innerText = "❌ KEY ĐÃ HẾT HẠN - VUI LÒNG TẢI LẠI TRANG";
+            keyBox.classList.add('key-expired');
+            timerBox.innerText = "Thời gian hiển thị đã kết thúc!";
+            copyBtn.disabled = true; // Vô hiệu hóa nút bấm sao chép
+        }
+    }, 1000);
+
+    // Hàm sao chép mã
     function copyKey() {
+        if (isExpired) return;
+        
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(selectedKey).then(() => {
                 alert("✅ Đã sao chép mã Key thành công!");
@@ -133,7 +175,6 @@
         }
     }
 
-    // Phương án sao chép dự phòng cho các trình duyệt cũ / không bảo mật
     function fallbackCopy(text) {
         const textArea = document.createElement("textarea");
         textArea.value = text;
@@ -145,7 +186,7 @@
             document.execCommand('copy');
             alert("✅ Đã sao chép mã Key thành công!");
         } catch (err) {
-            alert("❌ Không thể tự động sao chép. Vui lòng tự bôi đen mã để copy!");
+            alert("❌ Lỗi sao chép thủ công.");
         }
         document.body.removeChild(textArea);
     }
